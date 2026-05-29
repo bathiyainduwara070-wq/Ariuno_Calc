@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arduino Calculator | Bhathiya Induwara Jayasena</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            bg: '#0a0f16',
+                            card: '#121923',
+                            cardHover: '#1a2433',
+                            border: '#1f2937',
+                            cyan: '#00E5FF',
+                            orange: '#FF6D00',
+                            green: '#00E676',
+                            textBase: '#9ca3af',
+                            textHighlight: '#e5e7eb'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Background Grid */
+        body {
+            background-color: #0a0f16;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-attachment: fixed;
+            color: #e5e7eb;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0f16; }
+        ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #374151; }
+
+        /* Typography & Table Utils */
+        .section-label {
+            @apply text-brand-cyan font-mono text-sm font-semibold tracking-wider uppercase mb-4 block;
+        }
+        .table-container {
+            @apply w-full overflow-x-auto rounded-xl border border-brand-border bg-brand-card/50;
+        }
+        table { @apply w-full text-left text-sm; }
+        th { @apply text-brand-cyan font-mono py-4 px-6 border-b border-brand-border font-medium; }
+        td { @apply py-4 px-6 border-b border-brand-border/50 text-brand-textBase; }
+        tr:last-child td { @apply border-0; }
+        
+        /* Timeline Dot */
+        .timeline-dot {
+            @apply absolute -left-[9px] w-4 h-4 rounded-full border-4 border-brand-bg;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-brand-cyan selection:text-black">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-brand-bg/80 backdrop-blur-md border-b border-brand-border">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="#" class="font-mono font-bold text-brand-cyan tracking-tight flex items-center gap-2">
+                <span class="text-brand-orange">⚡</span> ARDUINO_CALC
+            </a>
+            <div class="hidden md:flex gap-6 text-sm font-mono text-brand-textBase">
+                <a href="#overview" class="hover:text-brand-cyan transition-colors">Overview</a>
+                <a href="#gallery" class="hover:text-brand-cyan transition-colors">Photos</a>
+                <a href="#hardware" class="hover:text-brand-cyan transition-colors">Hardware</a>
+                <a href="#software" class="hover:text-brand-cyan transition-colors">Software</a>
+                <a href="#protocol" class="hover:text-brand-cyan transition-colors">Protocol</a>
+                <a href="#timeline" class="hover:text-brand-cyan transition-colors">Timeline</a>
+                <a href="#reflection" class="hover:text-brand-cyan transition-colors">Reflection</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-5xl mx-auto px-6 pt-32 pb-24 space-y-32">
+
+        <!-- HERO SECTION -->
+        <header class="text-center space-y-6 max-w-3xl mx-auto flex flex-col items-center">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-brand-border bg-brand-card/50 text-brand-cyan text-xs font-mono mb-4">
+                🎓 Course Project 2: Java • Riga Nordic University
+            </div>
+            
+            <h1 class="text-5xl md:text-7xl font-bold tracking-tight">
+                <span class="text-brand-cyan">Arduino</span> 
+                <span class="text-white">Calculator</span>
+            </h1>
+            
+            <p class="text-xl text-brand-textBase">
+                by <span class="text-white font-medium">Bhathiya Induwara Jayasena</span>
+            </p>
+
+            <p class="text-lg text-brand-textBase leading-relaxed max-w-2xl mt-4">
+                This project is an Arduino-based calculator using a 4x4 keypad and I2C LCD display. Users can perform addition, subtraction, multiplication, and division operations with real-time feedback.
+            </p>
+
+            <div class="flex flex-wrap justify-center gap-3 mt-8">
+                <span class="px-4 py-2 rounded-md border border-brand-border bg-brand-card text-brand-textHighlight font-mono text-sm flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-brand-cyan"></span> Arduino UNO
+                </span>
+                <span class="px-4 py-2 rounded-md border border-brand-border bg-brand-card text-brand-textHighlight font-mono text-sm flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-brand-green"></span> I2C LCD 16x2
+                </span>
+                <span class="px-4 py-2 rounded-md border border-brand-border bg-brand-card text-brand-textHighlight font-mono text-sm flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-brand-orange"></span> 4x4 Keypad
+                </span>
+            </div>
+        </header>
+
+        <!-- 01 OVERVIEW -->
+        <section id="overview" class="scroll-mt-24">
+            <span class="section-label">01 — OVERVIEW</span>
+            <h2 class="text-4xl font-bold text-white mb-6">What does this project do?</h2>
+            <p class="text-brand-textBase text-lg mb-12 max-w-3xl leading-relaxed">
+                This project is a physical Arduino-based calculator connected with a 4x4 keypad and 16x2 I2C LCD display. Users can enter numbers and perform mathematical calculations directly from the keypad while results are displayed instantly on the LCD screen.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Card 1 -->
+                <div class="bg-brand-card border border-brand-border p-8 rounded-xl hover:border-brand-textBase/30 transition-colors">
+                    <div class="w-12 h-12 bg-brand-bg rounded-lg flex items-center justify-center text-2xl mb-6 border border-brand-border">🧮</div>
+                    <h3 class="text-xl font-bold text-white mb-3">Real-Time Operations</h3>
+                    <p class="text-brand-textBase">The calculator performs basic arithmetic operations including addition, subtraction, multiplication, and division. Users enter values through the keypad and instantly receive results.</p>
+                </div>
+                
+                <!-- Card 2 -->
+                <div class="bg-brand-card border border-brand-border p-8 rounded-xl hover:border-brand-textBase/30 transition-colors">
+                    <div class="w-12 h-12 bg-brand-bg rounded-lg flex items-center justify-center text-2xl mb-6 border border-brand-border">⌨️</div>
+                    <h3 class="text-xl font-bold text-white mb-3">4x4 Keypad Input System</h3>
+                    <p class="text-brand-textBase">A membrane keypad is used as the main input device. Numeric buttons are used for entering numbers while special buttons control operations (A: +, B: -, C: ×, D: /, #: Calculate, *: Clear).</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-brand-card border border-brand-border p-8 rounded-xl hover:border-brand-textBase/30 transition-colors">
+                    <div class="w-12 h-12 bg-brand-bg rounded-lg flex items-center justify-center text-2xl mb-6 border border-brand-border">📟</div>
+                    <h3 class="text-xl font-bold text-white mb-3">I2C LCD Display Output</h3>
+                    <p class="text-brand-textBase">The 16x2 I2C LCD provides real-time output for user input, operations, and final calculation results. The display also shows a custom startup screen with the project name.</p>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="bg-brand-card border border-brand-border p-8 rounded-xl hover:border-brand-textBase/30 transition-colors">
+                    <div class="w-12 h-12 bg-brand-bg rounded-lg flex items-center justify-center text-2xl mb-6 border border-brand-border">⚡</div>
+                    <h3 class="text-xl font-bold text-white mb-3">Automatic Reset Function</h3>
+                    <p class="text-brand-textBase">After displaying the final answer, the calculator automatically clears previous values and returns to the start screen, allowing users to begin a new calculation quickly.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 02 PHOTOS (GALLERY) -->
+        <section id="gallery" class="scroll-mt-24">
+            <span class="section-label">02 — PHOTOS</span>
+            <h2 class="text-4xl font-bold text-white mb-6">Project Gallery</h2>
+            <p class="text-brand-textBase text-lg mb-10 max-w-3xl leading-relaxed">
+                Screenshots of the system diagram and photos of the physical hardware setup in action.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Note: Using exact file names provided in the zip / attachments. Browser handles %20 encoding for spaces automatically in modern HTML but encoded below for safety -->
+                <div class="space-y-3">
+                    <div class="bg-brand-card border border-brand-border p-2 rounded-xl overflow-hidden h-48 flex items-center justify-center">
+                        <img src="ChatGPT%20Image%20May%2029,%202026,%2012_39_51%20PM.png" alt="Circuit Diagram" class="max-w-full max-h-full object-contain rounded-lg">
+                    </div>
+                    <p class="font-mono text-sm text-brand-textBase text-center">// Circuit Diagram & Plan</p>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="bg-brand-card border border-brand-border p-2 rounded-xl overflow-hidden h-48 flex items-center justify-center">
+                        <img src="WhatsApp%20Image%202026-05-29%20at%2012.53.23.jpeg" alt="LCD Close-up" class="max-w-full max-h-full object-cover rounded-lg">
+                    </div>
+                    <p class="font-mono text-sm text-brand-textBase text-center">// LCD Startup Screen</p>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="bg-brand-card border border-brand-border p-2 rounded-xl overflow-hidden h-48 flex items-center justify-center">
+                        <img src="WhatsApp%20Image%202026-05-29%20at%2012.53.22%20(1).jpeg" alt="Arduino Top View" class="max-w-full max-h-full object-cover rounded-lg">
+                    </div>
+                    <p class="font-mono text-sm text-brand-textBase text-center">// Microcontroller Wiring</p>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="bg-brand-card border border-brand-border p-2 rounded-xl overflow-hidden h-48 flex items-center justify-center">
+                        <img src="WhatsApp%20Image%202026-05-29%20at%2012.53.22.jpeg" alt="Full Setup with Monitor" class="max-w-full max-h-full object-cover rounded-lg">
+                    </div>
+                    <p class="font-mono text-sm text-brand-textBase text-center">// Hardware + PC Setup</p>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="bg-brand-card border border-brand-border p-2 rounded-xl overflow-hidden h-48 flex items-center justify-center">
+                        <img src="WhatsApp%20Image%202026-05-29%20at%2012.53.21.jpeg" alt="Setup Front View" class="max-w-full max-h-full object-cover rounded-lg">
+                    </div>
+                    <p class="font-mono text-sm text-brand-textBase text-center">// Keypad & Display Action</p>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="bg-brand-card border border-brand-border p-2 rounded-xl overflow-hidden h-48 flex items-center justify-center">
+                        <img src="WhatsApp%20Image%202026-05-29%20at%2012.53.12.jpeg" alt="Wiring Close-up" class="max-w-full max-h-full object-cover rounded-lg">
+                    </div>
+                    <p class="font-mono text-sm text-brand-textBase text-center">// I/O Pin Connections</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 03 HARDWARE -->
+        <section id="hardware" class="scroll-mt-24">
+            <span class="section-label">03 — HARDWARE</span>
+            <h2 class="text-4xl font-bold text-white mb-6">Components & Wiring</h2>
+            <p class="text-brand-textBase text-lg mb-10 max-w-3xl leading-relaxed">
+                All hardware components used in the Arduino Calculator project and their connection details.
+            </p>
+
+            <div class="space-y-12">
+                
+                <!-- Bill of Materials -->
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-4 border-l-2 border-brand-cyan pl-3">Bill of Materials</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>COMPONENT</th>
+                                    <th>MODEL</th>
+                                    <th>PURPOSE</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="font-mono">1</td>
+                                    <td class="text-white">Microcontroller</td>
+                                    <td>Arduino Uno (Keyestudio)</td>
+                                    <td>Main processing and control board</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-mono">2</td>
+                                    <td class="text-white">Display Module</td>
+                                    <td>I2C LCD 16x2</td>
+                                    <td>Displays numbers, operations, and results</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-mono">3</td>
+                                    <td class="text-white">Input Device</td>
+                                    <td>4x4 Membrane Keypad</td>
+                                    <td>User input for numbers and operations</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-mono">4</td>
+                                    <td class="text-white">Jumper Wires</td>
+                                    <td>Male-to-Male</td>
+                                    <td>Hardware connections</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-mono">5</td>
+                                    <td class="text-white">USB Cable</td>
+                                    <td>USB-A to USB-B</td>
+                                    <td>Arduino power and serial communication</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-mono">6</td>
+                                    <td class="text-white">Computer</td>
+                                    <td>Windows PC / Laptop</td>
+                                    <td>Uploading code and monitoring serial data</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Wiring / Circuit Connections -->
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-4 border-l-2 border-brand-cyan pl-3">Wiring / Circuit Connections</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>FROM</th>
+                                    <th>→</th>
+                                    <th>TO</th>
+                                    <th>NOTE</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td class="text-brand-cyan font-mono">Arduino 5V</td><td class="text-brand-textBase">→</td><td class="text-brand-green font-mono">LCD VCC</td><td>LCD power supply</td></tr>
+                                <tr><td class="text-brand-cyan font-mono">Arduino GND</td><td class="text-brand-textBase">→</td><td class="text-brand-green font-mono">LCD GND</td><td>LCD ground connection</td></tr>
+                                <tr><td class="text-brand-cyan font-mono">Arduino A4</td><td class="text-brand-textBase">→</td><td class="text-brand-green font-mono">LCD SDA</td><td>I2C data line</td></tr>
+                                <tr><td class="text-brand-cyan font-mono">Arduino A5</td><td class="text-brand-textBase">→</td><td class="text-brand-green font-mono">LCD SCL</td><td>I2C clock line</td></tr>
+                                
+                                <tr><td class="text-brand-cyan font-mono">Arduino Pin 5</td><td class="text-brand-textBase">→</td><td class="text-brand-orange font-mono">Keypad Row 1</td><td>Keypad row connection</td></tr>
+                                <tr><td class="text-brand-cyan font-mono">Arduino Pin 4</td><td class="text-brand-textBase">→</td><td class="text-brand-orange font-mono">Keypad Row 2</td><td>Keypad row connection</td></tr>
+                                <tr><td class="text-brand-cyan font-mono">Arduino Pin 3</td><td class="text-brand-textBase">→</td><td class="text-brand-orange font-mono">Keypad Row 3</td><td>Keypad row connection</td></tr>
+                                <tr><td class="text-brand-cyan font-mono">Arduino Pin 2</td><td class="text-brand-textBase">→</td><td class="text-brand-orange font-mono">Keypad Row 4</td><td>Keypad row connection</td></tr>
+                                
+                                <tr><td class="text-brand-cyan font-mono">Arduino A3</td><td class="text-brand-textBase">→</td><td class="text-brand-orange font-mono">Keypad Column 1</td><td>Keypad column connection</td></tr>
+                                <tr><td class="text-brand-cyan font-mono">Arduino A2</td><td class="text-brand-textBase">→</td><td class="text-brand-orange font-mono">Keypad Column 2</td><td>Keypad column connection</td></tr>
+                                <tr><td class="text-brand-cyan font-mono">Arduino A1</td><td class="text-brand-textBase">→</td><td class="text-brand-orange font-mono">Keypad Column 3</td><td>Keypad column connection</td></tr>
+                                <tr><td class="text-brand-cyan font-mono">Arduino A0</td><td class="text-brand-textBase">→</td><td class="text-brand-orange font-mono">Keypad Column 4</td><td>Keypad column connection</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Keypad Buttons -->
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-4 border-l-2 border-brand-cyan pl-3">Keypad Button Functions</h3>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>BUTTON</th>
+                                        <th>FUNCTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td class="font-mono text-white bg-brand-border/30 w-16 text-center">A</td><td>Addition (+)</td></tr>
+                                    <tr><td class="font-mono text-white bg-brand-border/30 w-16 text-center">B</td><td>Subtraction (-)</td></tr>
+                                    <tr><td class="font-mono text-white bg-brand-border/30 w-16 text-center">C</td><td>Multiplication (×)</td></tr>
+                                    <tr><td class="font-mono text-white bg-brand-border/30 w-16 text-center">D</td><td>Division (÷)</td></tr>
+                                    <tr><td class="font-mono text-white bg-brand-border/30 w-16 text-center">#</td><td>Calculate Result</td></tr>
+                                    <tr><td class="font-mono text-white bg-brand-border/30 w-16 text-center">*</td><td>Clear Screen / Reset</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- System Operation -->
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-4 border-l-2 border-brand-cyan pl-3">System Operation Steps</h3>
+                        <ol class="list-decimal list-inside space-y-3 text-brand-textBase bg-brand-card border border-brand-border p-6 rounded-xl">
+                            <li><span class="text-white">User enters numbers</span> using the keypad.</li>
+                            <li><span class="text-white">Arithmetic operations</span> are selected using A, B, C, or D buttons.</li>
+                            <li><span class="text-white">The LCD displays</span> entered values and operations in real time.</li>
+                            <li><span class="text-white">Pressing #</span> calculates the final result.</li>
+                            <li><span class="text-white">The Arduino processes</span> the calculation and displays the answer on the LCD.</li>
+                            <li><span class="text-white">After a short delay</span>, the calculator automatically resets for the next calculation.</li>
+                        </ol>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 04 SOFTWARE -->
+        <section id="software" class="scroll-mt-24">
+            <span class="section-label">04 — SOFTWARE</span>
+            <h2 class="text-4xl font-bold text-white mb-6">Arduino & Embedded System</h2>
+            <p class="text-brand-textBase text-lg mb-10 max-w-3xl leading-relaxed">
+                This project uses an Arduino sketch developed in the Arduino IDE to control the keypad input system, perform mathematical calculations, and display results on the I2C LCD screen.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+                <!-- Arduino Sketch -->
+                <div class="bg-brand-card border border-brand-border p-8 rounded-xl">
+                    <div class="w-10 h-10 bg-brand-bg rounded-lg flex items-center justify-center text-xl mb-4 border border-brand-border">🔧</div>
+                    <h3 class="text-xl font-bold text-white mb-4">Arduino Sketch Features</h3>
+                    <ul class="space-y-2 text-brand-textBase text-sm">
+                        <li>• Initializes the I2C 16x2 LCD display</li>
+                        <li>• Reads user input from the 4x4 membrane keypad</li>
+                        <li>• Supports addition, subtraction, multiplication, and division</li>
+                        <li>• Displays live keypad input on the LCD</li>
+                        <li>• Calculates results when the <span class="font-mono text-brand-cyan">#</span> button is pressed</li>
+                        <li>• Automatically clears and resets after calculation</li>
+                        <li>• Sends results through Serial at 9600 baud rate</li>
+                        <li>• Custom startup screen: "Bhathiya's Calculator"</li>
+                    </ul>
+                </div>
+
+                <!-- IO Systems -->
+                <div class="bg-brand-card border border-brand-border p-8 rounded-xl flex flex-col gap-6">
+                    <div>
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="w-8 h-8 bg-brand-bg rounded-md flex items-center justify-center border border-brand-border text-sm">⌨️</span>
+                            <h3 class="text-lg font-bold text-white">Keypad Control System</h3>
+                        </div>
+                        <p class="text-brand-textBase text-sm leading-relaxed">
+                            Numeric buttons capture input. Special logic routes <span class="font-mono text-brand-cyan">A, B, C, D</span> to operation handlers. <span class="font-mono text-brand-cyan">#</span> executes the math, and <span class="font-mono text-brand-cyan">*</span> clears the active buffer to reset.
+                        </p>
+                    </div>
+                    <div class="w-full h-px bg-brand-border"></div>
+                    <div>
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="w-8 h-8 bg-brand-bg rounded-md flex items-center justify-center border border-brand-border text-sm">📟</span>
+                            <h3 class="text-lg font-bold text-white">I2C LCD Display System</h3>
+                        </div>
+                        <p class="text-brand-textBase text-sm leading-relaxed">
+                            Displays startup welcome screen, live buffer of entered numbers and operators, and the final results. Uses I2C (SDA/SCL) for simplified 2-wire data communication.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dev Env -->
+            <div class="mb-12">
+                <h3 class="text-xl font-bold text-white mb-4 border-l-2 border-brand-cyan pl-3">Development Environment</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>SOFTWARE</th>
+                                <th>PURPOSE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="text-white font-medium">Arduino IDE</td><td>Writing and uploading Arduino code</td></tr>
+                            <tr><td class="text-white font-medium">Embedded C++</td><td>Programming language used for Arduino</td></tr>
+                            <tr><td class="text-white font-medium">Serial Monitor</td><td>Viewing transmitted calculation results</td></tr>
+                            <tr><td class="text-white font-medium">Wokwi Simulator</td><td>Circuit simulation and testing</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Wokwi Embed -->
+            <div>
+                <h3 class="text-xl font-bold text-white mb-4 border-l-2 border-brand-cyan pl-3">Wokwi Web Simulation</h3>
+                <p class="text-brand-textBase text-sm mb-4">Try the circuit online — no physical hardware needed. Press the Play button to start the calculator simulation.</p>
+                <div class="w-full h-[500px] rounded-xl overflow-hidden border border-brand-border bg-brand-card">
+                    <iframe src="https://wokwi.com/projects/465346771087629313?embed=1" style="width:100%; height:100%; border:none;"></iframe>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- 05 PROTOCOL -->
+        <section id="protocol" class="scroll-mt-24">
+            <span class="section-label">05 — PROTOCOL</span>
+            <h2 class="text-4xl font-bold text-white mb-6">Serial Communication</h2>
+            <p class="text-brand-textBase text-lg mb-10 max-w-3xl leading-relaxed">
+                All communication between the Arduino calculator and the computer happens through USB Serial communication at 9600 baud rate.
+            </p>
+
+            <div class="space-y-8">
+                <!-- Arduino -> PC -->
+                <div>
+                    <h3 class="text-lg font-bold text-white mb-3 border-l-2 border-brand-cyan pl-3">Arduino → Computer</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>MESSAGE</th>
+                                    <th>EXAMPLE</th>
+                                    <th>TRIGGER</th>
+                                    <th>PURPOSE</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-brand-cyan font-mono bg-brand-cyan/10 px-2 py-1 rounded inline-block mt-3 ml-6">Calculator Ready</td>
+                                    <td class="font-mono text-sm">Calculator Ready</td>
+                                    <td>Arduino boots</td>
+                                    <td>Confirms system startup</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-brand-cyan font-mono bg-brand-cyan/10 px-2 py-1 rounded inline-block mt-3 ml-6">Result Output</td>
+                                    <td class="font-mono text-sm">25</td>
+                                    <td>After calculation</td>
+                                    <td>Sends final answer</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-brand-cyan font-mono bg-brand-cyan/10 px-2 py-1 rounded inline-block mt-3 ml-6">Reset Status</td>
+                                    <td class="font-mono text-sm">Start Calc</td>
+                                    <td>After auto reset</td>
+                                    <td>Indicates calculator reset</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Calc Process & Status -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-3 border-l-2 border-brand-cyan pl-3">Calculation Process</h3>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>STEP</th>
+                                        <th>ACTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td class="font-mono text-brand-textBase">1</td><td class="text-white">User enters first number</td></tr>
+                                    <tr><td class="font-mono text-brand-textBase">2</td><td class="text-white">User selects operation</td></tr>
+                                    <tr><td class="font-mono text-brand-textBase">3</td><td class="text-white">User enters second number</td></tr>
+                                    <tr><td class="font-mono text-brand-textBase">4</td><td class="text-white">User presses <span class="font-mono text-brand-cyan">#</span> button</td></tr>
+                                    <tr><td class="font-mono text-brand-textBase">5</td><td class="text-white">Arduino calculates result</td></tr>
+                                    <tr><td class="font-mono text-brand-textBase">6</td><td class="text-white">LCD displays final answer</td></tr>
+                                    <tr><td class="font-mono text-brand-textBase">7</td><td class="text-white">System auto-resets after 3s</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="space-y-8">
+                        <div>
+                            <h3 class="text-lg font-bold text-white mb-3 border-l-2 border-brand-cyan pl-3">Serial Configuration</h3>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>SETTING</th>
+                                            <th>VALUE</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td class="text-brand-textBase">Communication Type</td><td class="text-white font-mono">USB Serial</td></tr>
+                                        <tr><td class="text-brand-textBase">Baud Rate</td><td class="text-white font-mono">9600</td></tr>
+                                        <tr><td class="text-brand-textBase">Data Flow</td><td class="text-white font-mono">Arduino → Computer</td></tr>
+                                        <tr><td class="text-brand-textBase">Monitoring Tool</td><td class="text-white font-mono">Arduino Serial Monitor</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="text-lg font-bold text-white mb-3 border-l-2 border-brand-cyan pl-3">LCD Display Status</h3>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>LCD OUTPUT</th>
+                                            <th>MEANING</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td class="font-mono text-brand-cyan">Bhathiya's Calculator</td><td class="text-white">Startup screen</td></tr>
+                                        <tr><td class="font-mono text-brand-cyan">Start Calc</td><td class="text-white">Ready for input</td></tr>
+                                        <tr><td class="font-mono text-brand-cyan">Result:</td><td class="text-white">Final answer display</td></tr>
+                                        <tr><td class="font-mono text-brand-cyan">Auto Reset</td><td class="text-white">Returns to calculator mode</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 06 TIMELINE -->
+        <section id="timeline" class="scroll-mt-24">
+            <span class="section-label">06 — TIMELINE</span>
+            <h2 class="text-4xl font-bold text-white mb-6">Project Milestones</h2>
+            <p class="text-brand-textBase text-lg mb-12 max-w-3xl leading-relaxed">
+                Development progress of the Arduino Calculator project from planning stage to final implementation.
+            </p>
+
+            <div class="border-l-2 border-brand-border ml-2 pl-8 space-y-12 relative">
+                
+                <!-- Item 1 -->
+                <div class="relative">
+                    <div class="timeline-dot border-brand-cyan"></div>
+                    <div class="text-sm font-mono text-brand-cyan mb-1">April 08, 2026</div>
+                    <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">📋 Project Planning</h3>
+                    <p class="text-brand-textBase max-w-2xl leading-relaxed">Project idea was selected and system requirements were identified. Components such as the Arduino Uno, I2C LCD display, and 4x4 keypad were selected for the calculator system.</p>
+                </div>
+
+                <!-- Item 2 -->
+                <div class="relative">
+                    <div class="timeline-dot border-brand-orange"></div>
+                    <div class="text-sm font-mono text-brand-orange mb-1">April 10, 2026</div>
+                    <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">🔧 Circuit Assembly</h3>
+                    <p class="text-brand-textBase max-w-2xl leading-relaxed">Hardware components were connected successfully. Keypad wiring and I2C LCD connections were completed using jumper wires and tested on the Arduino board.</p>
+                </div>
+
+                <!-- Item 3 -->
+                <div class="relative">
+                    <div class="timeline-dot border-blue-400"></div>
+                    <div class="text-sm font-mono text-blue-400 mb-1">April 11, 2026</div>
+                    <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">💻 Arduino Programming</h3>
+                    <p class="text-brand-textBase max-w-2xl leading-relaxed">The calculator logic was programmed using Arduino IDE. Mathematical operations, keypad input handling, LCD output, and serial communication were implemented.</p>
+                </div>
+
+                <!-- Item 4 -->
+                <div class="relative">
+                    <div class="timeline-dot border-purple-400"></div>
+                    <div class="text-sm font-mono text-purple-400 mb-1">April 12, 2026</div>
+                    <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">🧪 System Testing</h3>
+                    <p class="text-brand-textBase max-w-2xl leading-relaxed">The calculator system was tested with addition, subtraction, multiplication, and division operations. LCD display functionality and keypad responses were verified successfully.</p>
+                </div>
+
+                <!-- Item 5 -->
+                <div class="relative">
+                    <div class="timeline-dot border-brand-green"></div>
+                    <div class="text-sm font-mono text-brand-green mb-1">April 13, 2026</div>
+                    <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">✅ Final Version</h3>
+                    <p class="text-brand-textBase max-w-2xl leading-relaxed mb-3">Final project completed with:</p>
+                    <ul class="list-disc list-inside text-brand-textBase space-y-1">
+                        <li>Auto-reset functionality</li>
+                        <li>Custom startup screen</li>
+                        <li>Serial communication output</li>
+                        <li>Working hardware implementation</li>
+                        <li>Wokwi simulation</li>
+                        <li>Project documentation</li>
+                    </ul>
+                </div>
+
+                <!-- Item 6 -->
+                <div class="relative">
+                    <div class="timeline-dot border-yellow-400"></div>
+                    <div class="text-sm font-mono text-yellow-400 mb-1">May 29, 2026</div>
+                    <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">🎓 Project Demonstration</h3>
+                    <p class="text-brand-textBase max-w-2xl leading-relaxed">Final Arduino Calculator project demonstrated successfully with complete hardware setup, live calculation testing, and LCD output presentation.</p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 07 REFLECTION -->
+        <section id="reflection" class="scroll-mt-24">
+            <span class="section-label">07 — REFLECTION</span>
+            <h2 class="text-4xl font-bold text-white mb-6">What I Learned</h2>
+            <p class="text-brand-textBase text-lg mb-10 max-w-3xl leading-relaxed">
+                A short reflection on the development process, challenges, and results.
+            </p>
+
+            <div class="space-y-4">
+                <div class="bg-brand-card border border-brand-border p-6 rounded-xl border-l-4 border-l-brand-cyan">
+                    <p class="text-brand-textBase leading-relaxed">
+                        One of the most important parts of this project was learning how to build and program a complete Arduino-based embedded system using real hardware components. Connecting the I2C LCD display and 4x4 keypad correctly required careful wiring and understanding of Arduino pin communication.
+                    </p>
+                </div>
+
+                <div class="bg-brand-card border border-brand-border p-6 rounded-xl border-l-4 border-l-brand-orange">
+                    <p class="text-brand-textBase leading-relaxed mb-4">
+                        The most challenging part of the project was configuring the keypad operations and managing the calculator logic properly. Understanding how to detect keypad input, store multiple numbers, process mathematical operations, and reset the system after calculations was an important learning experience. Working with the I2C LCD display helped me understand how serial communication protocols simplify hardware connections by reducing the number of wires needed between components and the Arduino board.
+                    </p>
+                    <p class="text-brand-textBase leading-relaxed mb-2 font-medium text-white">This project also improved my programming skills in Arduino C++. I learned how to:</p>
+                    <ul class="list-disc list-inside text-brand-textBase space-y-1">
+                        <li>Read keypad input and control LCD output</li>
+                        <li>Create functions for calculations</li>
+                        <li>Manage variables and user input</li>
+                        <li>Use conditional statements for operation handling</li>
+                        <li>Implement automatic system reset behavior</li>
+                    </ul>
+                </div>
+
+                <div class="bg-brand-card border border-brand-border p-6 rounded-xl border-l-4 border-l-brand-green">
+                    <p class="text-brand-textBase leading-relaxed font-medium text-white mb-2">The final version of the project works successfully:</p>
+                    <ul class="list-disc list-inside text-brand-textBase space-y-1 mb-4">
+                        <li>The keypad responds accurately to user input</li>
+                        <li>Mathematical calculations execute correctly</li>
+                        <li>Results display clearly on the LCD screen</li>
+                        <li>The calculator automatically resets after calculations</li>
+                        <li>Serial communication outputs results through the USB connection</li>
+                    </ul>
+                    <p class="text-brand-textBase leading-relaxed">
+                        Overall, this project provided practical experience with embedded systems, hardware interfacing, and Arduino software development while demonstrating a complete working calculator system using physical electronic components.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER & LINKS -->
+        <footer class="border-t border-brand-border pt-12 pb-6 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="text-brand-textBase text-sm">
+                &copy; 2026 Bhathiya Induwara Jayasena. Riga Nordic University.
+            </div>
+            
+            <div class="flex gap-4">
+                <a href="https://github.com/bathiyainduwara070-wq/ariuno_calculator" target="_blank" class="px-5 py-2.5 rounded-lg border border-brand-border bg-brand-card hover:bg-brand-cardHover text-white font-medium text-sm transition-colors flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg>
+                    GitHub Code
+                </a>
+                <a href="https://wokwi.com/projects/465346771087629313" target="_blank" class="px-5 py-2.5 rounded-lg border border-brand-cyan bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan font-medium text-sm transition-colors flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Wokwi Simulation
+                </a>
+            </div>
+        </footer>
+
+    </main>
+</body>
+</html>
